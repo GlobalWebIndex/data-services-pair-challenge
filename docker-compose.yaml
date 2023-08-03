@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  # PostgreSQL service
+  postgres:
+    image: postgres:latest
+    environment:
+      # env for postgres to create these
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: passwdd
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Migration
+  migration:
+    build:
+      context: .
+    command: ["./wait-for-it.sh", "postgres", "5432", "sql-migrate", "up"] # Add this line to wait for PostgreSQL to start
+    depends_on:
+      - postgres
+    environment:
+      # env needed for wait-for-it.sh
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: testuser
+      POSTGRES_DB: testdb
+      POSTGRES_PASSWORD: passwdd
+
+  # Go application service
+  app:
+    build:
+      context: .
+    command: ["./wait-for-it.sh", "postgres", "5432", "./app", "run"] # Add this line to wait for PostgreSQL to start
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - migration
+    environment:
+      # env needed for wait-for-it.sh
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: testuser
+      POSTGRES_DB: testdb
+      POSTGRES_PASSWORD: passwdd
+      # env needed for app
+      DATABASE_URL: postgres://testuser:passwdd@postgres:5432/testdb
+
+
+volumes:
+  postgres_data:
