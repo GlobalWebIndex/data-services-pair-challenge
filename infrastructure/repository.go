@@ -3,7 +3,9 @@ package infrastructure
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/GlobalWebIndex/data-services-pair-challenge/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -20,19 +22,26 @@ func NewAudienceRepository(db *pgxpool.Pool) *AudienceRepository {
 }
 
 func (r *AudienceRepository) Create(ctx context.Context, audience *domain.Audience) error {
-	// Implementation to insert the Audience into the database.
-	// Use prepared statements to prevent SQL injection.
-
-	query := `
-		INSERT INTO audiences (name, expression)
-		VALUES ($1, $2)
-	`
-
-	_, err := r.db.Exec(ctx, query, audience.Name, audience.Expression)
+	// Convert the expression struct to JSON
+	expressionJSON, err := json.Marshal(audience.Expression)
 	if err != nil {
-		return fmt.Errorf("failed to create Audience: %w", err)
+		return err
 	}
 
+	// Your INSERT query here
+	query := `
+INSERT INTO audiences (name, expression)
+VALUES ($1, $2)
+RETURNING id;
+`
+
+	var insertID int
+	err = r.db.QueryRow(ctx, query, audience.Name, expressionJSON).Scan(&insertID)
+	if err != nil {
+		return err
+	}
+
+	audience.ID = domain.AudienceID(strconv.Itoa(insertID))
 	return nil
 }
 
@@ -82,8 +91,9 @@ func (r *AudienceRepository) GetByID(ctx context.Context, audienceID domain.Audi
 	`
 
 	row := r.db.QueryRow(ctx, query, audienceID)
+	var expressionJSON []byte
 	audience := &domain.Audience{}
-	err := row.Scan(&audience.ID, &audience.Name, &audience.Expression)
+	err := row.Scan(&audience.ID, &audience.Name, &expressionJSON)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("audience not found")
@@ -91,6 +101,10 @@ func (r *AudienceRepository) GetByID(ctx context.Context, audienceID domain.Audi
 		return nil, fmt.Errorf("failed to get Audience by ID: %w", err)
 	}
 
+	err = json.Unmarshal(expressionJSON, &audience.Expression)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal audience expression: %+v, %w", string(expressionJSON), err)
+	}
 	return audience, nil
 }
 

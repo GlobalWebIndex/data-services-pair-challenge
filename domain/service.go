@@ -23,19 +23,19 @@ func (s *AudienceService) CreateAudience(ctx context.Context, name AudienceName,
 	}
 
 	// Create the Audience entity.
-	audience := &Audience{
+	audience := Audience{
 		Name:       name,
 		Expression: expression,
 	}
 
 	// Now, call the repository's Create method to persist the Audience in the database.
-	err := s.audienceRepository.Create(ctx, audience)
+	err := s.audienceRepository.Create(ctx, &audience)
 	if err != nil {
 		// Handle any error occurred during the repository call.
 		return nil, err
 	}
 
-	return audience, nil
+	return &audience, nil
 }
 
 // GetAudienceByID fetches an audience by its ID.
