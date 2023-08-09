@@ -139,6 +139,59 @@ func (suite *AudienceSuite) TestAudienceJSONToStruct() {
 	suite.Equal(expectedAudience, audience, "Decoded Audience does not match the expected")
 }
 
+func (suite *AudienceSuite) TestAudienceJSONToStructVersion2() {
+	jsonData := []byte(`
+	{
+		"id": "1",
+		"name": "Test Audience",
+		"expression": {
+			"and": [
+				{
+					"question_code": "Q1",
+					"options": ["DP1", "DP2"],
+					"suffix_codes": [100, 200],
+					"min_count": 10,
+					"not": true
+				},
+				{
+					"question_code": "Q2",
+					"options": ["DP3", "DP4"],
+					"suffix_codes": [300, 400],
+					"min_count": 20
+				}
+			]
+		}
+	}`)
+
+	var audience domain.Audience
+	err := json.Unmarshal(jsonData, &audience)
+	assert.NoError(suite.T(), err, "Error while unmarshaling JSON to Audience")
+
+	expectedAudience := domain.Audience{
+		ID:   "1",
+		Name: "Test Audience",
+		Expression: domain.Expression{
+			And: []*domain.Expression{
+				{
+					QuestionCode:   "Q1",
+					DatapointCodes: []domain.DatapointCode{"DP1", "DP2"},
+					SuffixCodes:    []domain.SuffixCode{100, 200},
+					MinCount:       10,
+					Not:            true,
+				},
+				{
+					QuestionCode:   "Q2",
+					DatapointCodes: []domain.DatapointCode{"DP3", "DP4"},
+					SuffixCodes:    []domain.SuffixCode{300, 400},
+					MinCount:       20,
+				},
+			},
+		},
+	}
+
+	suite.Equal(expectedAudience, audience, "Decoded Audience does not match the expected")
+}
+
 func (suite *AudienceSuite) TestAudienceStructToJSON() {
 	audience := domain.Audience{
 		ID:   "1",

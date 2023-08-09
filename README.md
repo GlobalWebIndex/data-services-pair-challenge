@@ -6,9 +6,9 @@ Welcome to the interview code challenge for potential candidates! In this challe
 
 ### Option 1: Audience and Expression JSON Marshaling
 
-**Issue:** The current implementation of JSON marshaling and unmarshaling for the `Audience` and `Expression` structs is causing the tests to fail. Your task is to fix the marshaling and unmarshaling implementation so that the tests pass.
+**Issue:** The current implementation of JSON unmarshaling for the `Expression` struct is causing the tests to fail. Your task is to fix the unmarshaling implementation so that the tests pass.
 
-**Instructions:** We will work together to update the `domain/audience.go` file in the `option_1` branch to modify the JSON tags for the `Audience` and `Expression` structs, ensuring correct encoding and decoding of the JSON data. We will use the `json.Marshal` and `json.Unmarshal` functions from the Go standard library to handle JSON encoding and decoding.
+**Instructions:** We will work together to update the `domain/audience.go` file in the `option_1` branch to modify the JSON unmarshaler implementation of `Expression` structs, ensuring correct decoding of the JSON data. We will use the `json.Unmarshal` function from the Go standard library to handle the decoding.
 
 #### Steps (Option 1):
 
