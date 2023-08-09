@@ -22,6 +22,8 @@ func NewCreateAudienceHandler(audienceService *domain.AudienceService) *CreateAu
 }
 
 // ServeHTTP handles the HTTP request for creating an audience.
+// Option 2: fix this http handler to return correctly ID of newly
+// created record in the JSON response.
 func (handler *CreateAudienceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
